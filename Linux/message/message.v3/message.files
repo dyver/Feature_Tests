@@ -1,0 +1,6 @@
+config.h
+dlog.cfg
+message.cpp
+message.h
+main.cpp
+sigslot.h
