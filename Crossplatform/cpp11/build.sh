@@ -1,14 +1,14 @@
 #!/bin/bash
 
 #compiler=/opt/gcc-4.8.0/bin/g++
-#compiler=/opt/gcc-4.9/bin/g++
-compiler=g++
+compiler=/opt/gcc-4.9/bin/g++
+#compiler=g++
 
 compile_item() {
     local root_path=$1
     local container=$2
     local name=$3
-    local flags="-c -std=c++11 -pedantic-errors -Wall -Wextra -Werror -g -O0"
+    local flags="-c -std=c++1y -pedantic-errors -Wall -Wextra -Werror -g -O0"
     local includes_path=$root_path/include
     local src_file=$name.cpp
     local src_file_path=$root_path$container$src_file
