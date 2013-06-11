@@ -1,8 +1,8 @@
 #!/bin/bash
 
-compiler=/opt/gcc-4.8.0/bin/g++
+#compiler=/opt/gcc-4.8.0/bin/g++
 #compiler=/opt/gcc-4.9/bin/g++
-#compiler=g++
+compiler=g++
 
 compile_item() {
     local root_path=$1
@@ -21,6 +21,7 @@ compile_item() {
 
 compile_all() {
     local root_dir=$1
+    mkdir -p $root_dir/bin
     for item in `ls *.cpp` ; do
         obj=${item%.cpp} # use filename but extension
         compile_item "$root_dir" "/src/" $obj
