@@ -76,6 +76,7 @@ int main() {
         requires std::Assignable<T, U>
         void copy(T, U);
     */
-
+    // C++14
+    BinaryLiterals();
     return 0;
 }

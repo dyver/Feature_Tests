@@ -7,6 +7,7 @@ void Array();
 void Async();
 void Attributes();
 void AutoTypeDeduction();
+void BinaryLiterals();
 void C99features();
 void ConstExpr();
 void ContainerImprovements();

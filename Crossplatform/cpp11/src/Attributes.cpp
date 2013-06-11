@@ -8,5 +8,7 @@
 }
 
 void Attributes() {
-    functionWithAttribute();
+    try {
+        functionWithAttribute();
+    } catch (...) {}
 }

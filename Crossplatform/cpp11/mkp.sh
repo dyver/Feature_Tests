@@ -1,21 +1,18 @@
 #!/bin/bash
 
-#exit 0
-
 make_proxies() {
-    cd ./proxies/
-    for item in `ls *.cpp`
-    do
-        if [ ${item} != "cpp11.cpp" ]
-        then
-            str=${item%.cpp} # use filename but extension
-            [ -f ${item} ] `rm -f ${item}`
-            echo "#include <++cpp11.h>" >> ${item}
-            echo "" >> ${item}
-            echo "void "${str}"() {" >> ${item}
-            echo "    std::cout << std::endl << \"Feature \\\""${str}"\\\" not implemented.\" << std::endl;" >> ${item}
-            echo "}" >> ${item}
-        fi
+    cd ./src/
+    list=`ls *.cpp`
+    cd ../proxies/
+    rm -fr *
+    for item in $list ; do
+        [ ${item} == "++cpp11.cpp" ] && continue
+        str=${item%.cpp} # use filename but extension
+        echo "#include <++cpp11.h>" >> ${item}
+        echo "" >> ${item}
+        echo "void "${str}"() {" >> ${item}
+        echo "    std::cout << std::endl << \"Feature \\\""${str}"\\\" not implemented.\" << std::endl;" >> ${item}
+        echo "}" >> ${item}
     done
     cd ../
 }
@@ -27,13 +24,10 @@ make_declarations() {
     echo "#ifndef DECLARATIONS_H" >> ${decls}
     echo "#define DACLARATIONS_H" >> ${decls}
     echo "" >> ${decls}
-    for item in `ls *.cpp`
-    do
-        if [ ${item} != "++cpp11.cpp" ]
-        then
-            str=${item%.cpp} # use filename but extension
-            echo "void "${str}"();" >> ${decls}
-        fi
+    for item in `ls *.cpp` ; do
+        [ ${item} == "++cpp11.cpp" ] && continue
+        str=${item%.cpp} # use filename but extension
+        echo "void "${str}"();" >> ${decls}
     done
     echo "" >> ${decls}
     echo "#endif // DECLARATIONS_H" >> ${decls}
@@ -42,11 +36,3 @@ make_declarations() {
 
 make_proxies
 make_declarations
-
-#rm ./list3
-
-        #echo "src/"${item} >> list
-
-        #echo "proxies/"${item} >> list2
-
-        #echo "    src/"${item}" \\" >> list3
