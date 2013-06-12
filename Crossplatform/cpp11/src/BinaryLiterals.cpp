@@ -7,7 +7,7 @@ void BinaryLiterals() {
     outHeader("Binary literals");
     outIdent();
     std::cout
-        << "b = "
+        << "0b11110000 = "
         << b;
     outTail();
 }
