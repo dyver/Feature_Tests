@@ -14,3 +14,4 @@
 
 compiler_output.txt
 bin
+*.creator.user

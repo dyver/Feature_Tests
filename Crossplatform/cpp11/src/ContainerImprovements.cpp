@@ -1,3 +1,5 @@
+#include <chrono> // for time utilities
+
 #include <++cpp11.h>
 
 // container improvements
@@ -22,28 +24,25 @@ void ContainerImprovements() {
     std::cout << std::endl;
     // move operators
     const int vec_size = 10000000;
-    clock_t before, after;
-    double difference;
-    before = clock();
+    using namespace std::chrono;
+    auto before = system_clock::now();
     {
         // returning container without copy
         std::vector<int> mv = moveOperatorsFunction(vec_size);
     }
-    after = clock();
-    difference = double(after - before) / CLOCKS_PER_SEC;
+    microseconds elapsed = duration_cast<microseconds>(system_clock::now() - before);
     outIdent();
-    std::cout << "Without copy elapsed seconds: " << difference << std::endl;
-    before = clock();
+    std::cout << "Without copy elapsed seconds: " << elapsed.count() << std::endl;
+    before = system_clock::now();
     {
         // passing container by reference
         // must be the same efficiency as above
         std::vector<int> mv(vec_size);
         moveOperatorsFunctionToCompare(mv);
     }
-    after = clock();
-    difference = double(after - before) / CLOCKS_PER_SEC;
+    elapsed = duration_cast<microseconds>(system_clock::now() - before);
     outIdent();
-    std::cout << "By reference elapsed seconds: " << difference << std::endl;
+    std::cout << "By reference elapsed seconds: " << elapsed.count() << std::endl;
     // improved push operations
     std::vector<std::pair<int, std::string>> ipv;
     for (int i = 0; i < 10; ++i) {
