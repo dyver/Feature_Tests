@@ -8,7 +8,7 @@
 void Threads() {
     try {
         std::mutex mutex;
-        const int times = 10000000;
+        const int times = 1000000;
         // data shared between threads
         typedef std::shared_ptr<int> SD;
         SD data(new int());

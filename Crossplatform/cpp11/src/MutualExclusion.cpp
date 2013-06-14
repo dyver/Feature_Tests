@@ -9,7 +9,7 @@ void MutualExclusion() {
     // std::mutex
     const auto data_initial_value = 666;
     const auto threads_total = 20;
-    const auto cycles_total = 1000;
+    const auto cycles_total = 100;
     std::vector<std::thread*> threads;
     std::mutex mutex;
     int data = data_initial_value;

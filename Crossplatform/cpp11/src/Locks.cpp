@@ -1,5 +1,5 @@
 #include <thread> // for std::thread
-#include <mutex> // for std::mutex and std::***lock
+#include <mutex> // for std::mutex, std::***lock and std::lock_guard
 
 #include <++cpp11.h>
 
@@ -12,6 +12,7 @@ void Locks() {
     const auto threads_total = 20;
     const auto cycles_total = 1000;
     typedef std::unique_lock<std::mutex> UL;
+    typedef std::lock_guard<std::mutex> LG;
     typedef std::vector<std::unique_ptr<std::thread>> TC;
     TC threads;
     std::mutex mutex;
@@ -25,11 +26,17 @@ void Locks() {
     auto misses_index = 0;
     auto f1 = [&data, &mutex]() {
         for (auto i = 0; i < cycles_total; ++i) {
+            LG lock(mutex);
+            ++data;
+        }
+    };
+    auto f2 = [&data, &mutex]() {
+        for (auto i = 0; i < cycles_total; ++i) {
             UL lock(mutex);
             ++data;
         }
     };
-    auto f2 = [&data, &mutex, &misses_index]() {
+    auto f3 = [&data, &mutex, &misses_index]() {
         for (auto i = 0; i < cycles_total; ++i) {
             UL lock(mutex, std::defer_lock);
             if (lock.try_lock())
@@ -38,18 +45,18 @@ void Locks() {
                 ++misses_index;
         }
     };
-    auto f3 = [&data1, &data2, &data3, &mutex1, &mutex2, &mutex3]() {
+    auto fPlus = [&data1, &data2, &data3, &mutex1, &mutex2, &mutex3]() {
         for (auto i = 0; i < cycles_total; ++i) {
             UL lock1(mutex1, std::defer_lock);
             UL lock2(mutex2, std::defer_lock);
             UL lock3(mutex3, std::defer_lock);
-            std::lock(lock1, lock2, lock3); // prevents deadlocks
+            std::lock(lock1, lock2, lock3);
             ++data1;
             ++data2;
             ++data3;
         }
     };
-    auto f4 = [&data1, &data2, &data3, &mutex1, &mutex2, &mutex3]() {
+    auto fMinus = [&data1, &data2, &data3, &mutex1, &mutex2, &mutex3]() {
         for (auto i = 0; i < cycles_total; ++i) {
             UL lock1(mutex1, std::defer_lock);
             UL lock2(mutex2, std::defer_lock);
@@ -67,7 +74,8 @@ void Locks() {
         threads.emplace_back(new std::thread(f1));
         threads.emplace_back(new std::thread(f2));
         threads.emplace_back(new std::thread(f3));
-        threads.emplace_back(new std::thread(f4));
+        threads.emplace_back(new std::thread(fPlus));
+        threads.emplace_back(new std::thread(fMinus));
     }
     for (auto& i : threads) i->join();
     // now threads will be deleted automatically cause of unique_ptr property
