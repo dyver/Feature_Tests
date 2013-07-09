@@ -67,6 +67,10 @@ target=$1
 [ -z $target ] && target=all
 case "$target" in
     all)
+		if [ ! -f "$compiler" ] ; then
+			echo -e -n $red"Compiler not found"$default
+            exit 1
+		fi
         echo -e $magenta"Building target using "`$compiler --version | grep "g++"`$default
         root_dir=$PWD
         compiler_output=$root_dir/compiler_output.txt
