@@ -14,4 +14,8 @@
 
 compiler_output.txt
 bin
+
+moc_*.cpp
 *.creator.user
+
+Makefile

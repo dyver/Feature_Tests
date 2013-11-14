@@ -12,6 +12,7 @@ int main(int argc, char *argv[])
 
     if (argc > 1) {
         fd = open("/dev/ttyUSB0", O_RDWR|O_NOCTTY);
+        printf("Descriptor=%d\n", fd);
 
         ioctl(fd, TIOCMGET, &status);
         printf("Before: %d\n", status);
@@ -26,6 +27,7 @@ int main(int argc, char *argv[])
         sleep(3);
     } else {
         fd = open("/dev/ttyS0", O_RDWR|O_NOCTTY);
+        printf("Descriptor=%d\n", fd);
         while (1) {
             ioctl(fd, TIOCMGET, &status);
             printf("Current: %d\n", status);
