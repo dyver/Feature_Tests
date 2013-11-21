@@ -4,8 +4,8 @@
 #include <algorithm>
 #include <string>
 #include <vector>
-#include <thread>
 #include <chrono>
+#include <cstdio>
 
 #include <unistd.h>
 #include <termios.h>
@@ -13,6 +13,7 @@
 #include <fcntl.h>
 
 using namespace std;
+using namespace chrono;
 
 const char* ctrl_default = "\033[0m";
 const char* ctrl_black = "\033[30;40m";
@@ -31,13 +32,14 @@ const char* ctrl_backspace = "\033[1D";
 
 bool isActive = false;
 
+speed_t portSpeed = B38400;
+
 int openSerial(const string& deviceName) {
     int fd = open(deviceName.c_str(), O_RDWR | O_NOCTTY);
     return fd;
 }
 
-bool setParameters(int fd) {
-    // установить скорость и параметры порта
+bool setSerialParameters(int fd) {
     termios ts;
     tcgetattr(fd, &ts);
     ts.c_cc[VMIN] = 1;
@@ -46,19 +48,18 @@ bool setParameters(int fd) {
     ts.c_lflag = 0;
     ts.c_iflag = 0;
     ts.c_lflag &= ~ICANON;
-    speed_t speed = B115200;
-    if (cfsetospeed(&ts, speed) == -1) {
-        cout << "Ошибка! Не могу установить выходную скорость" << endl;
-        return false;
-    }
-    if (cfsetispeed(&ts, speed) == -1) {
-        cout << "Ошибка! Не могу установить входную скорость" << endl;
-        return false;
-    }
     ts.c_cflag &= ~CSIZE;
     ts.c_cflag |= CS8 | CREAD;
     ts.c_cflag &= ~PARENB;
     ts.c_cflag &= ~CSTOPB;
+    if (cfsetospeed(&ts, portSpeed) == -1) {
+        cout << "Ошибка! Не могу установить выходную скорость" << endl;
+        return false;
+    }
+    if (cfsetispeed(&ts, portSpeed) == -1) {
+        cout << "Ошибка! Не могу установить входную скорость" << endl;
+        return false;
+    }
     // установить блокирующий режим функции read()
     if (fcntl(fd, F_SETFL, 0) < 0) {
         cout << "Ошибка! Не могу установить блокирующий режим" << endl;
@@ -72,7 +73,7 @@ bool setParameters(int fd) {
     return true;
 }
 
-int getStatus(int fd) {
+int getSerialStatus(int fd) {
     int status;
     int ioResult = ioctl(fd, TIOCMGET, &status);
     if (ioResult == -1) {
@@ -81,7 +82,7 @@ int getStatus(int fd) {
     return status;
 }
 
-void printStatus(int status) {
+void printSerialStatus(int status) {
     cout << "Flags: ";
     if (status bitand TIOCM_DTR) {
         cout << "DTR ";
@@ -111,7 +112,7 @@ void validateSerial(const string& deviceName) {
     if (fd == -1) {
         return;
     }
-    int status = getStatus(fd);
+    int status = getSerialStatus(fd);
     if (status == -1) {
         close(fd);
         return;
@@ -147,16 +148,15 @@ string chooseSerial(int choosed = -1) {
     return "";
 }
 
-int inSize = 20;
-int outSize = 20;
-int PacketCounterFieldSize = 8;
-int endMarkerPosition = 19;
-vector<char> inBuf(inSize);
-vector<char> outBuf(outSize);
+const int InSize = 7000;
+const int OutSize = 7000;
+const int PacketCounterFieldSize = 8;
+const int endMarkerPosition = OutSize - 1;
+vector<char> inBuf(InSize);
+vector<char> outBuf(OutSize);
 
-const char beginMarker = '#';
-const char endMarker = '*';
-vector<char> sample = { beginMarker, 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', endMarker };
+const char BeginMarker = '#';
+const char EndMarker = '*';
 
 int packetCounter = 0;
 
@@ -165,6 +165,8 @@ int noAskErrorsCounter = 0;
 int noReplyErrorsCounter = 0;
 int malformedAskErrorsCounter = 0;
 int malformedReplyErrorsCounter = 0;
+
+milliseconds elapsedTime{0};
 
 void printInfo() {
     string message = "PC:";
@@ -202,20 +204,39 @@ void printInfo() {
         }
     }
 
+    {
+        message += " ET:";
+        stringstream ss;
+        ss << setw(PacketCounterFieldSize) << setfill('_') << elapsedTime.count();
+        message += ss.str();
+    }
+
     cout << "\033[" + to_string(message.size()) + "D" << flush;
-    cout << message;
+    cout << message << flush;
 }
 
-void fillBuf() {
-    copy(begin(sample), end(sample), begin(outBuf));
+void fillBuf(vector<char>& v, int c) {
+    char sample = '+';
+    for (auto& i : v) {
+        i = sample;
+        if (++sample > 'Z') {
+            sample = '+';
+        }
+    }
+    v.front() = BeginMarker;
+    v.back() = EndMarker;
     stringstream ss;
-    ss << setw(PacketCounterFieldSize) << setfill('0') << packetCounter;
+    ss << setw(PacketCounterFieldSize) << setfill('0') << c;
     string sss = ss.str();
-    copy(begin(sss), end(sss), begin(outBuf) + 1);
+    copy(begin(sss), end(sss), begin(v) + 1);
+}
+
+void fillAllBufs() {
+    fillBuf(outBuf, packetCounter);
     fill(begin(inBuf), end(inBuf), '$');
 }
 
-int inBufPos = 0;
+size_t inBufPos = 0;
 
 bool checkPacket() {
     string packetField;
@@ -225,12 +246,8 @@ bool checkPacket() {
         packetCounter = receivedPacketCounter;
         return false;
     }
-    vector<char> buf;
-    copy(begin(sample), end(sample), back_inserter(buf));
-    stringstream ss;
-    ss << setw(PacketCounterFieldSize) << setfill('0') << packetCounter;
-    string sss = ss.str();
-    copy(begin(sss), end(sss), begin(buf) + 1);
+    vector<char> buf(InSize);
+    fillBuf(buf, packetCounter);
     if (equal(begin(buf), end(buf), begin(inBuf))) {
         return true;
     }
@@ -258,7 +275,7 @@ bool waitForReady(int fd) {
     FD_ZERO(&fds);
     FD_SET(fd, &fds);
     fd_set rfds = fds;
-    int PortReadTimeoutInMicroseconds = 1000000;
+    int PortReadTimeoutInMicroseconds = 3000000;
     timeval timeout = { 0, PortReadTimeoutInMicroseconds };
     int res = select(fd + 1, &rfds, NULL, NULL, &timeout);
     if (res <= 0) {
@@ -268,35 +285,39 @@ bool waitForReady(int fd) {
 }
 
 void printInBuf() {
-    cout << endl;
-    for (auto i : inBuf) {
-        if (isprint(i)) {
-            cout << i;
+    cout << endl << ctrl_cyan << ctrl_bold << "{" << ctrl_default;
+    for (auto i = 0U; i < inBufPos; ++i) {
+        if (isprint(inBuf[i])) {
+            cout << ctrl_green << inBuf[i] << ctrl_default;
         } else {
-            cout << ctrl_yellow << to_string(i) << ctrl_default;
+            cout << ctrl_yellow << "!" << to_string(inBuf[i]) << ctrl_default;
         }
     }
-    cout << endl;
+    cout << ctrl_cyan << ctrl_bold << "}" << ctrl_magenta << inBufPos << ctrl_default << endl;
 }
 
 bool readFromSerial(int fd) {
+    using Clock = steady_clock;
+    static auto start = Clock::now();
+    auto finish = start;
     vector<char> buf(100);
-    //size_t result = fread(buf.data(), 1, buf.size(), )
     int result = read(fd, buf.data(), buf.size());
     if (result == 0) {
+        //printInBuf();
         return false;
     }
     if (result > (int)inBuf.size()) {
         inBufPos = 0;
-        fillBuf();
-//        printInBuf();
+        fillAllBufs();
+        //printInBuf();
         return false;
     }
-    auto pos = find(begin(buf), begin(buf) + result, '#');
+    auto pos = find(begin(buf), begin(buf) + result, BeginMarker);
     if (pos != begin(buf) + result) {
-        fillBuf();
+        fillAllBufs();
         copy(pos, begin(buf) + result, begin(inBuf));
         inBufPos = result;
+        start = Clock::now();
     } else {
         size_t toAppend = result;
         if (toAppend > inBuf.size() - inBufPos) {
@@ -305,12 +326,14 @@ bool readFromSerial(int fd) {
         copy(begin(buf), begin(buf) + toAppend, begin(inBuf) + inBufPos);
         inBufPos += toAppend;
     }
-    if (inBuf[endMarkerPosition] == '*' and inBufPos == endMarkerPosition + 1) {
-//        printInBuf();
+    if (inBuf.front() == BeginMarker and inBuf.back() == EndMarker and inBufPos == inBuf.size()) {
+        //printInBuf();
         inBufPos = 0;
+        finish = Clock::now();
+        elapsedTime = duration_cast<milliseconds>(finish - start);
         return true;
     }
-//    printInBuf();
+    //printInBuf();
     return false;
 }
 
@@ -323,8 +346,12 @@ void sendReply(int fd) {
 }
 
 bool receiveAsk(int fd) {
-    for (int i = 0; i < 100; ++i) {
+    for (int i = 0; i < OutSize; ++i) {
         if (not waitForReady(fd)) {
+//            if (inBufPos) {
+//                printInBuf();
+//                inBufPos = 0;
+//            }
             return false;
         }
         if (readFromSerial(fd)) {
@@ -338,6 +365,16 @@ bool receiveReply(int fd) {
     return receiveAsk(fd);
 }
 
+void hardTimedWork(const milliseconds& ms) {
+    using Clock = steady_clock;
+    auto before = Clock::now();
+    auto now = before;
+    do {
+        for (int i = 0; i < 1000000; ++i);
+        now = Clock::now();
+    } while (now - before < ms);
+}
+
 int main(int argc, char** argv) {
     isActive = false;
     int portNumber = -1;
@@ -345,31 +382,35 @@ int main(int argc, char** argv) {
         if (argv[1][0] == 'a') {
             isActive = true;
             if (argc > 2) {
+                if (argc > 3) {
+                    while (true) hardTimedWork(milliseconds(600));
+                }
                 portNumber = atoi(argv[2]);
             }
         } else {
             portNumber = atoi(argv[1]);
         }
-    } else {
     }
     listSerial();
     if (serials.empty()) {
-        cout << "No serial ports found!" << endl;
+        cout << "ERROR! No serial ports found!" << endl;
         return 1;
     }
     string choosed = chooseSerial(portNumber);
     if (choosed == "") {
-        cout << "No such port!" << endl;
+        cout << "ERROR! No such port!" << endl;
         return 1;
     }
     cout << endl << "Selected " << choosed << " port" << endl;
-    cout << " Working in ";
+//    cout << "Port speed is " << portSpeed << " bps" << endl;
+    cout << "Working in ";
     if (isActive) {
         cout << "active";
     } else {
         cout << "passive";
     }
     cout << " mode" << endl;
+    cout << "Exchanging by " << OutSize << "-bytes packets" << endl;
     cout << "Legend:" << endl;
     cout << " PC - packet counter" << endl;
     if (isActive) {
@@ -379,23 +420,24 @@ int main(int argc, char** argv) {
         cout << " NA - no ask counter" << endl;
         cout << " MA - malformed ask counter" << endl;
     }
+    cout << " ET - receiving packet elapsed time" << endl;
     int fd = openSerial(choosed);
     if (fd == -1) {
-        cout << "ERROR in opening existing port!!!" << endl;
+        cout << "ERROR! Can't open existing port!" << endl;
         return 2;
     }
-    if (not setParameters(fd)) {
-        cout << "ERROR setting parameters!!!" << endl;
+    if (not setSerialParameters(fd)) {
+        cout << "ERROR! Can't set parameters!" << endl;
         close(fd);
         return 2;
     }
     if (isActive) {
         while (true) {
             printInfo();
-            this_thread::sleep_for(chrono::milliseconds(10));
-            fillBuf();
+            hardTimedWork(milliseconds(800));
+            fillAllBufs();
             sendAsk(fd);
-            //this_thread::sleep_for(chrono::milliseconds(20));
+            hardTimedWork(milliseconds(600));
             if (not receiveReply(fd)) {
                 ++noReplyErrorsCounter;
                 continue;
@@ -409,6 +451,7 @@ int main(int argc, char** argv) {
     } else  {
         while (true) {
             printInfo();
+            hardTimedWork(milliseconds(400));
             if (not receiveAsk(fd)) {
                 ++noAskErrorsCounter;
                 continue;
@@ -417,7 +460,7 @@ int main(int argc, char** argv) {
                 ++malformedAskErrorsCounter;
                 continue;
             }
-            fillBuf();
+            fillAllBufs();
             sendReply(fd);
             ++packetCounter;
         }

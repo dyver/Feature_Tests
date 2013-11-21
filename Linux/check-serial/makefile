@@ -4,7 +4,7 @@ native:
 	FLAGS="-Wall -g -O0 -std=c++11 -pedantic -Wall -Wextra -Werror"; \
 	LIBS=-lpthread; \
 	OBJECTS=main.cpp; \
-	$$compiler $$FLAGS -o $$NAME $$OBJECTS $$LIBS
+	$$compiler $$FLAGS -o $$NAME $$OBJECTS
 
 armv5:
 	compiler=armv5tel-softfloat-linux-gnueabi-g++; \
@@ -18,9 +18,8 @@ armv7:
 	compiler=armv7a-hardfloat-linux-gnueabi-g++; \
 	NAME=check-serial_armv7; \
 	FLAGS="-Wall -g -O0 -std=c++11 -pedantic -Wall -Wextra -Werror"; \
-	LIBS=-lpthread; \
 	OBJECTS=main.cpp; \
-	$$compiler $$FLAGS -o $$NAME $$OBJECTS $$LIBS
+	$$compiler $$FLAGS -o $$NAME $$OBJECTS
 
 all: native
 
