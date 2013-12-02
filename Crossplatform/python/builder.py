@@ -16,7 +16,6 @@ try:
     print u"Вернулись обратно back to normal now"
 except:
     print "Fatal error:", sys.exc_info()[0], sys.exc_info()[1]
-#exit()
 
 if os.path.exists('build_py'):
     shutil.rmtree('build_py', True)
