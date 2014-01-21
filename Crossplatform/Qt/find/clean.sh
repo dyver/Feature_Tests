@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 rm -fr ./debug
 rm -fr ./release
 rm -f ./*.pro

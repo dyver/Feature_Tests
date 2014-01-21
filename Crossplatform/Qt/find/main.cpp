@@ -1,10 +1,13 @@
 #include <QApplication>
-#include "findDialog.h"
+#include  <QStyleFactory>
 
-int main(int argc, char *argv[])
-{
+#include <findDialog.h>
+
+int main(int argc, char** argv) {
   QApplication app(argc, argv);
-  FindDialog *dialog = new FindDialog;
+  //QApplication::setStyle(new Style);
+  QApplication::setStyle(QStyleFactory::create("windows"));
+  FindDialog* dialog = new FindDialog;
   dialog->show();
   return app.exec();
 }
