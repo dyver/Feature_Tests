@@ -17,10 +17,10 @@ try:
 except:
     print "Fatal error:", sys.exc_info()[0], sys.exc_info()[1]
 
-if os.path.exists('build_py'):
-    shutil.rmtree('build_py', True)
-os.mkdir('build_py')
-os.chdir('build_py')
+if os.path.exists('build-py'):
+    shutil.rmtree('build-py', True)
+os.mkdir('build-py')
+os.chdir('build-py')
 
 program_text = [
     '#include <QMainWindow>',
@@ -45,7 +45,7 @@ with open('main.cpp', 'w') as f:
         f.write('\n')
 
 os.system('qmake -project')
-with open('build_py.pro', 'a') as f:
+with open('build-py.pro', 'a') as f:
     f.write('\ngreaterThan(QT_MAJOR_VERSION, 4): QT += widgets')
     f.write('\nCONFIG-=debug_and_release')
     f.write('\nCONFIG+=release')
@@ -54,4 +54,4 @@ with open('build_py.pro', 'a') as f:
 os.system('qmake')
 os.system('make')
 print os.getcwdu()
-os.system('"' + os.getcwd() + '/build_py' + '"')
+os.system('"' + os.getcwd() + '/build-py' + '"')

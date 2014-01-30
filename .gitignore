@@ -12,10 +12,18 @@
 *.la
 *.a
 
+# Qt
+moc_*.cpp
+*.moc
+*.creator.user
+*.pro.user
+qrc_*
+
 compiler_output.txt
 bin
 
-moc_*.cpp
-*.creator.user
-
 Makefile
+
+build-*
+
+*.kate-swp

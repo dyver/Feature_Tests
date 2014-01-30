@@ -2,8 +2,8 @@ TEMPLATE = app
 TARGET = find
 INCLUDEPATH += .
 
-HEADERS = findDialog.h
-SOURCES = findDialog.cpp main.cpp
+HEADERS =
+SOURCES = main.cpp
 
 QT += widgets
 
