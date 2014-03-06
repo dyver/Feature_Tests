@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/images">
+        <file>icon.png</file>
+    </qresource>
+    <qresource prefix="/text">
+        <file>ReadonlyFile.txt</file>
+    </qresource>
+</RCC>
