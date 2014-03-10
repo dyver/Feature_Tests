@@ -1,5 +1,7 @@
 QMAKE_CXXFLAGS += -std=c++11 -pedantic -Wall -Wextra -Werror
 
+CONFIG -= debug_and_release
+
 QT = core gui widgets
 
 TEMPLATE = app
