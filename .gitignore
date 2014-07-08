@@ -15,12 +15,13 @@
 # Qt
 moc_*.cpp
 *.moc
-*.creator.user
-*.pro.user
+*.creator.user*
+*.pro.user*
 qrc_*
 
 compiler_output.txt
 bin
+*.exe
 
 Makefile
 

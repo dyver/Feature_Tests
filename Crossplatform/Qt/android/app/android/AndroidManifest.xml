@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version="1.0"?>
 <manifest package="ru.dyver.nik" android:installLocation="auto" android:versionCode="1" xmlns:android="http://schemas.android.com/apk/res/android" android:versionName="1.0">
     <application android:icon="@drawable/icon" android:hardwareAccelerated="true" android:label="@string/app_name" android:name="org.qtproject.qt5.android.bindings.QtApplication">
         <activity android:configChanges="orientation|uiMode|screenLayout|screenSize|smallestScreenSize|locale|fontScale|keyboard|keyboardHidden|navigation" android:screenOrientation="unspecified" android:label="@string/app_name" android:name="org.qtproject.qt5.android.bindings.QtActivity">

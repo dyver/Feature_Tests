@@ -34,7 +34,7 @@ int main(int argc, char** argv) {
     QString contentString(line);
 
     // Читаем из файла и записываем данные в файл
-    QString writableDirectory = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
+    QString writableDirectory = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
     QDir().mkpath(writableDirectory);
     QString writableFileName = QString(writableDirectory) + "/WritableFile.txt";
     QString data;
@@ -54,16 +54,16 @@ int main(int argc, char** argv) {
     contentString += "<h5>" + SharedLibrary::getFileContent(":/text/ReadonlyFile.txt") + "</h5>";
 
     contentString += "<small>";
-    contentString += QStandardPaths::writableLocation(QStandardPaths::HomeLocation);
-    contentString += "<br/>";
-    contentString += QStandardPaths::writableLocation(QStandardPaths::DataLocation);
-    contentString += "<br/>";
-    contentString += QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
-    contentString += "<br/>";
-    contentString += QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
-    contentString += "<br/>";
-    contentString += QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation);
-    contentString += "<br/>";
+    contentString += "<em>HomeLocation:</em><br/>";
+    contentString += QStandardPaths::writableLocation(QStandardPaths::HomeLocation) + "<br/>";
+    contentString += "<em>DataLocation:</em><br/>";
+    contentString += QStandardPaths::writableLocation(QStandardPaths::DataLocation) + "<br/>";
+    contentString += "<em>GenericDataLocation:</em><br/>";
+    contentString += QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation) + "<br/>";
+    contentString += "<em>ConfigLocation:</em><br/>";
+    contentString += QStandardPaths::writableLocation(QStandardPaths::ConfigLocation) + "<br/>";
+    contentString += "<em>GenericConfigLocation:</em><br/>";
+    contentString += QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation) + "<br/>";
     contentString += "</small>";
     auto content = new QTextEdit{contentString};
     content->setAlignment(Qt::AlignCenter);

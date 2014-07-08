@@ -1,10 +1,10 @@
 CCC=g++
 FLAGS= -Wall -Wextra -Werror -O3 -std=c++98 -pedantic
 NAME=curiously-recurring-template-pattern
-OBJECTS=main.cpp
+SOURCES=main.cpp
 
-all:	$(OBJECTS)
-	$(CCC) $(FLAGS) -o $(NAME) $(OBJECTS)
+all:	$(SOURCES)
+	$(CCC) $(FLAGS) -o $(NAME) $(SOURCES)
 
 clean:
-	rm $(NAME) $(NAME).exe
+	git clean -dfX

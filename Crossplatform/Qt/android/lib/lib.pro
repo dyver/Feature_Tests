@@ -1,3 +1,5 @@
+CONFIG -= debug_and_release
+
 QMAKE_CXXFLAGS += -std=c++11 -pedantic -Wall -Wextra -Werror
 
 QT = core
