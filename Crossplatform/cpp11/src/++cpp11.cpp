@@ -67,8 +67,7 @@ int main() {
     // Abandoning a process
     // Stroustrup haven't write this article.
     RandomNumberGeneration();
-    // Regular expressions
-    // Stroustrup haven't write this article.
+    RegularExpressions();
     /*
     // Concepts
     // unfortunately, they no in standard

@@ -38,6 +38,7 @@ proxies/PreventingNarrowing.cpp
 proxies/RandomNumberGeneration.cpp
 proxies/RangeForStatement.cpp
 proxies/RawStringLiterals.cpp
+proxies/RegularExpressions.cpp
 proxies/RightAngleBrackets.cpp
 proxies/RValueReferences.cpp
 proxies/SharedPtr.cpp
@@ -91,6 +92,7 @@ src/PreventingNarrowing.cpp
 src/RandomNumberGeneration.cpp
 src/RangeForStatement.cpp
 src/RawStringLiterals.cpp
+src/RegularExpressions.cpp
 src/RightAngleBrackets.cpp
 src/RValueReferences.cpp
 src/SharedPtr.cpp

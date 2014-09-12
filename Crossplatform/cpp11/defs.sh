@@ -3,8 +3,8 @@ isLinux=0
 [ -x /proc ] && isLinux=1
 
 # Compiler
-compiler_path=/usr
-#compiler_path=/opt/gcc-4.9-20130623
+#compiler_path=/usr
+compiler_path=/opt/gcc-4.9.1
 #compiler_path=/opt/gcc-4.8.0
 #compiler_path=c:/mingw32
 #compiler_path=c:/mingw64

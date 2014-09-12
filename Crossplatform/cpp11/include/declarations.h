@@ -40,6 +40,7 @@ void PreventingNarrowing();
 void RandomNumberGeneration();
 void RangeForStatement();
 void RawStringLiterals();
+void RegularExpressions();
 void RightAngleBrackets();
 void RValueReferences();
 void SharedPtr();
