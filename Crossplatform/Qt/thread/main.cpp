@@ -1,7 +1,4 @@
-#include <QApplication>
-#include <QHBoxLayout>
-#include <QSlider>
-#include <QThread>
+#include <QtWidgets>
 
 class Thread : public QThread
 {

@@ -1,4 +1,4 @@
-#include <inttypes.h>
+#include <cstdint>
 
 template<typename U, typename T> U any_cast(T t) {
     uint64_t i = (uint64_t)t;

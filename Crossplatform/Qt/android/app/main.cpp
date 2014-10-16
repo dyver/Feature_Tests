@@ -67,7 +67,7 @@ int main(int argc, char** argv) {
     contentString += "</small>";
     auto content = new QTextEdit{contentString};
     content->setAlignment(Qt::AlignCenter);
-    auto header = new QLabel{QString("<h2><i>Привет</i> <font color=red>Аналитик!</font></h2>")};
+    auto header = new QLabel{QString("<h2><i>Привет</i> <font color=red>братья по разуму!</font></h2>")};
     header->setAlignment(Qt::AlignCenter);
 
     // Получаем данные из файла ресурсов

@@ -1,10 +1,6 @@
-#include <QApplication>
-#include <QMainWindow>
-#include <QLabel>
-#include <QPushButton>
-#include <QLayout>
+#include <QtWidgets>
 
-int main(int argc, char** argv) {
+int main(int argc, char* argv[]) {
      QApplication app(argc, argv);
      auto label = new QLabel{"<h2><i>Привет</i> <font color=red>мир!</font></h2>"};
      label->setAlignment(Qt::AlignCenter);

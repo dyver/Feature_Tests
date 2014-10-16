@@ -1,8 +1,7 @@
-QT += core gui webkit
-
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets webkitwidgets
-
 TARGET = WebKit
-TEMPLATE = app
+QT *= widgets webkit webkitwidgets
+CONFIG -= debug_and_release
+CONFIG *= silent console
+QMAKE_CXXFLAGS += -std=c++11 -pedantic -Wall -Wextra -Werror
 
-SOURCES += main.cpp
+SOURCES = main.cpp

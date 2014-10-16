@@ -1,0 +1,5 @@
+app/Android
+app/Android.exe
+app/ReadOnly
+lib/libSharedLibrary.so*
+lib/SharedLibrary.dll

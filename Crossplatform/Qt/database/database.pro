@@ -1,5 +1,7 @@
 TARGET = database
 QT *= widgets sql
-QMAKE_CXXFLAGS += -std=c++11
-SOURCES = \
-    main.cpp \
+CONFIG -= debug_and_release
+CONFIG *= silent console
+QMAKE_CXXFLAGS += -std=c++11 -pedantic -Wall -Wextra -Werror
+
+SOURCES = main.cpp

@@ -1,20 +1,14 @@
-#-------------------------------------------------
-#
-# Project created by QtCreator 2011-11-16T14:33:17
-#
-#-------------------------------------------------
-
-QMAKE_CXXFLAGS += -std=c++0x
-
-QT       += core gui network widgets
-
 TARGET = SendReceive
-TEMPLATE = app
+QT *= widgets network
+CONFIG -= debug_and_release
+CONFIG *= silent console
+QMAKE_CXXFLAGS += -std=c++11 -pedantic -Wall -Wextra -Werror
 
+SOURCES = \
+    Main.cpp \
+    MainWindow.cpp \
 
-SOURCES += main.cpp\
-        mainwindow.cpp
+HEADERS = \
+    MainWindow.h \
 
-HEADERS  += mainwindow.h
-
-FORMS    += mainwindow.ui
+FORMS = MainWindow.ui

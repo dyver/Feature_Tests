@@ -1,13 +1,8 @@
-QMAKE_CXXFLAGS += -std=c++11
-
 TEMPLATE = app
 TARGET = qt3-c++11
-INCLUDEPATH += .
-
 CONFIG += thread
+QMAKE_CXXFLAGS += -std=c++11 -pedantic -Wall -Wextra
 
-# Input
-HEADERS += main.h
-SOURCES += main.cpp
-
-FORMS   = mydialog.ui
+HEADERS = main.h
+SOURCES = main.cpp
+FORMS = mydialog.ui

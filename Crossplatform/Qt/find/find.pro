@@ -1,10 +1,8 @@
-TEMPLATE = app
 TARGET = find
-INCLUDEPATH += .
+QT *= widgets
+CONFIG -= debug_and_release
+CONFIG *= silent console
+QMAKE_CXXFLAGS += -std=c++11 -pedantic -Wall -Wextra -Werror
 
-HEADERS =
 SOURCES = main.cpp
-
-QT += widgets
-
 RESOURCES = find.qrc

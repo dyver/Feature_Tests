@@ -6,6 +6,7 @@
 # Compiled Dynamic libraries
 *.so
 *.dylib
+*.dll
 
 # Compiled Static libraries
 *.lai
@@ -18,6 +19,7 @@ moc_*.cpp
 *.creator.user*
 *.pro.user*
 qrc_*
+ui_*.h
 
 compiler_output.txt
 bin

@@ -1,11 +1,8 @@
-QT += core gui webkit
-
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets webkitwidgets
-
 TARGET = svg-in-browser
-TEMPLATE = app
+QT *= widgets webkit webkitwidgets
+CONFIG -= debug_and_release
+CONFIG *= silent console
+QMAKE_CXXFLAGS += -std=c++11 -pedantic -Wall -Wextra -Werror
 
-SOURCES += main.cpp
-
-RESOURCES = \
-    svg-in-browser.qrc
+SOURCES = main.cpp
+RESOURCES = svg-in-browser.qrc
