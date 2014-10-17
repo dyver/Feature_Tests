@@ -95,7 +95,7 @@ def clean():
     os.system('git clean -dfX')
 
 def run():
-    os.system(BinaryFile)
+    subprocess.call(BinaryFile)
 
 def makeProxies():
     if not os.path.isdir(ProxiesDir):
