@@ -1,3 +1,5 @@
+#include <QtQuick>
+
 #include <UIClass.h>
 #include <ui_Form.h>
 #include <UIAggregateClass.h>
@@ -26,6 +28,11 @@ int main(int argc, char* argv[]) {
 
     auto uiLoader = new UILoader;
     uiLoader->show();
+
+    auto quickView = new QQuickView;
+    QObject::connect(quickView->engine(), &QQmlEngine::quit, &app, &QApplication::quit);
+    quickView->setSource(QUrl("qrc:/Form.qml"));
+    quickView->show();
 
     return app.exec();
 }

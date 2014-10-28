@@ -30,8 +30,9 @@ def Project():
         os.system('qmake -project')
         with open(ProjectFileName, 'ab') as f:
             f.write('QT *= widgets\n')
+            f.write('CONFIG *= silent\n')
             f.write('CONFIG -= debug_and_release\n')
-            f.write('CONFIG *= silent console\n')
+            f.write('windows : CONFIG *= console\n')
             f.write('QMAKE_CXXFLAGS += -std=c++11 -pedantic -Wall -Wextra -Werror\n')
         os.system('qmake')
 

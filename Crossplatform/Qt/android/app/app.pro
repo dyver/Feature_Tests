@@ -1,10 +1,12 @@
 TEMPLATE = app
-TARGET = Android
 
-QT = core gui widgets
+TARGET = Android
+QT *= widgets
+
+CONFIG *= silent
 CONFIG -= debug_and_release
-CONFIG *= silent console
-QMAKE_CXXFLAGS += -std=c++11 -pedantic -Wall -Wextra -Werror
+windows : CONFIG *= console
+QMAKE_CXXFLAGS += -std=c++11 -pedantic-errors -Wall -Wextra -Werror
 
 INCLUDEPATH += ../lib
 

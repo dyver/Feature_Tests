@@ -1,5 +1,6 @@
 <RCC>
-    <qresource prefix="">
+    <qresource prefix="/">
         <file>Form.ui</file>
+        <file>Form.qml</file>
     </qresource>
 </RCC>
