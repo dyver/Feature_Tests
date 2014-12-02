@@ -3,18 +3,25 @@
 
 using namespace std;
 
-class C
-{
+class Class {
     public:
-        C() { cout << "Ctor" << endl; throw std::runtime_error("11111"); }
-        ~C() { cout << "Dtor" << endl; }
+        Class() {
+            cout << "Constructor of object #" << ++getCounter() << endl;
+        }
+        ~Class() {
+            cout << "Destructor of object #" << getCounter()-- << endl;
+        }
+    private:
+        int& getCounter() {
+            static int counter = 0;
+            return counter;
+        }
 };
 
-C c;
+Class c;
 
-int main()
-{
-    C c;
+int main() {
+    Class c;
     exit(0);
     return 0;
 }
