@@ -1,8 +1,6 @@
 #include "pimpl.h"
 
-int main(void)
-{
+int main() {
     Pimpl pimpl;
-
     return 0;
 }

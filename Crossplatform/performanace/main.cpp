@@ -6,7 +6,7 @@ using namespace std;
 
 #include "SUtils.h"
 
-const long int cycles = 1L << 26;
+const long int cycles = 1L << 28;
 
 time_t before = 0;
 time_t after = 0;
@@ -46,13 +46,11 @@ void result()
 	cout << "Difference: " << difference << endl;
 }
 
-int main(int argc, char *argv[])
+int main()
 {
 	begin();
 	process();
 	end();
 	result();
-//	cout << "Press any key to continue..." << endl;
-//	cin.get();
 	return 0;
 }

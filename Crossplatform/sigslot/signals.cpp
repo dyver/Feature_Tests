@@ -40,7 +40,7 @@ void Signals::SignalReceiver::OnAction()
 
 using namespace Signals;
 
-int main(int argc, char **argv)
+int main()
 {
     // signals
     SignalSender ss;

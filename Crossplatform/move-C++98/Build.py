@@ -3,15 +3,6 @@
 
 import os
 import sys
-import shutil
-
-def rm(path):
-    if os.path.isfile(path):
-        os.remove(path)
-        return()
-    if os.path.isdir(path):
-        shutil.rmtree(path)
-        return()
 
 Name = 'move-C++98'
 Flags = '-std=c++98 -Wall -Wextra -Werror -pedantic-errors -O3'

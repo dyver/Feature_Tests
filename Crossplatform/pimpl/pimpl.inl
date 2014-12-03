@@ -1,12 +1,9 @@
-class Pimpl::Imp
-{
+class Pimpl::Imp {
     public:
-        Imp()
-        {
+        Imp() {
             cout << "Pimpl::Imp::Imp()" << endl;
         }
-        ~Imp()
-        {
+        ~Imp() {
             cout << "Pimpl::Imp::~Imp()" << endl;
         }
 };

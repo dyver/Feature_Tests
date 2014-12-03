@@ -2,8 +2,16 @@
 # -*- coding: utf-8 -*-
 
 import os
-import shutil
 import sys
+import shutil
+
+def rm(path):
+    if os.path.isfile(path):
+        os.remove(path)
+        return()
+    if os.path.isdir(path):
+        shutil.rmtree(path, True)
+        return()
 
 from colorama import init
 init(autoreset=True)
@@ -17,8 +25,7 @@ try:
 except:
     print "Fatal error:", sys.exc_info()[0], sys.exc_info()[1]
 
-if os.path.exists('build-py'):
-    shutil.rmtree('build-py', True)
+rm('build-py')
 os.mkdir('build-py')
 os.chdir('build-py')
 

@@ -15,7 +15,7 @@ namespace util
             }
             virtual ~OnEventBase()
             {
-cout << "~OnEventBase" << endl;
+                cout << "~OnEventBase" << endl;
                 storage.remove(this);
             }
             virtual void invoke(const Data& d) = 0;
@@ -49,7 +49,7 @@ cout << "~OnEventBase" << endl;
                 }
                 ~Storage()
                 {
-cout << "~Storage" << endl;
+                    cout << "~Storage" << endl;
                     destructing = true;
                     for (typename TL::iterator i = listeners.begin(); i != listeners.end(); ++i) {
                         if (*i) delete *i;

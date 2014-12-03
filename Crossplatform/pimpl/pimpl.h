@@ -1,7 +1,6 @@
 #include <memory>
 
-class Pimpl
-{
+class Pimpl {
     public:
         Pimpl();
         ~Pimpl();
