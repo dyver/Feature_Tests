@@ -1,7 +1,7 @@
 #ifndef REALIZATION_H
 #define REALIZATION_H
 
-#include <../PluginHost/interface.h>
+#include <../interface/interface.h>
 
 class Realization : public Interface {
     Q_OBJECT

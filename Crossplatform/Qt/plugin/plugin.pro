@@ -1,7 +1,7 @@
 TEMPLATE = subdirs
 
 SUBDIRS = \
-    pluginit \
-    PluginHost \
+    extension \
+    loader \
 
 CONFIG += ordered silent

@@ -4,7 +4,7 @@
 #include <QDir>
 #include <QDebug>
 
-#include <interface.h>
+#include <../interface/interface.h>
 
 using namespace std;
 
@@ -21,17 +21,17 @@ class PluginManager {
             index = i;
         }
         template<typename T> List getNames() {
-            QList<QString> res;
-            for (const auto& i : libList) {
-                QPluginLoader loader(i);
+            QList<QString> names;
+            for (const auto& item : libList) {
+                QPluginLoader loader(item);
                 auto p = qobject_cast<T*>(loader.instance());
                 if (!p) throw runtime_error("Loading plugin");
-                res << p->getName().c_str();
+                names << p->getName().c_str();
             }
-            return res;
+            return names;
         }
         template<typename T> T* getObject() {
-            if (index < 0 || index >= libList.size()) throw runtime_error("Invalid index");
+            if (index < 0 or index >= libList.size()) throw runtime_error("Invalid index");
             QPluginLoader loader(libList[index]);
             auto p = qobject_cast<T*>(loader.instance());
             if (!p) throw runtime_error("Loading plugin");
@@ -59,7 +59,7 @@ class PluginManager {
 
 class InterfaceManager : public PluginManager {
     public:
-        InterfaceManager() : PluginManager("../pluginit/") {}
+        InterfaceManager() : PluginManager("../extension/") {}
         Interface* getInterface() { return getObject<Interface>(); }
 };
 
@@ -74,13 +74,10 @@ Interface* makeInterface(int version = 0) {
 }
 
 void useInterface(Interface* interface) {
-    qDebug() << "Data:" << interface->getData();
+    qDebug() << "Interface::getData():" << interface->getData();
 }
 
-int main(int argc, char* argv[]) {
-    Q_UNUSED(argc);
-    Q_UNUSED(argv);
-
+int main() {
     try {
         auto interface = makeInterface();
         useInterface(interface);
@@ -89,6 +86,5 @@ int main(int argc, char* argv[]) {
     } catch (const exception& e) {
         qCritical() << "Critical error:" << e.what();
     }
-
     return 0;
 }

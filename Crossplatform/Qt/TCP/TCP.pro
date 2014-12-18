@@ -1,4 +1,4 @@
-TARGET = SendReceive
+TARGET = TCP
 QT *= widgets network
 
 CONFIG *= silent
