@@ -24,9 +24,23 @@ void RegularExpressions() {
         std::regex pattern(R"(<(book-title)>(.*?)</(\1)>)");
         std::smatch matches;
         if (std::regex_search(text, matches, pattern)) {
+            outIdent();
+            std::cout << "Search results:" << std::endl;
             for (const auto& item : matches) {
                 outIdent();
                 std::cout << item << std::endl;
+            }
+        }
+        outIdent();
+        std::cout << "Search results using iterator:" << std::endl;
+        for (
+            std::sregex_iterator it(begin(text), end(text), pattern);
+            it != std::sregex_iterator{};
+            ++it
+        ) {
+            for (const auto& item : (*it)) {
+                outIdent();
+                std::cout << item <<  std::endl;
             }
         }
     } catch (const std::regex_error& e) {

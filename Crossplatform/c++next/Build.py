@@ -1,27 +1,11 @@
-#!/usr/bin/python
+#!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-import os
-import sys
-import subprocess
-
-sys.dont_write_bytecode = True
-
-import Defines
-
-from Defines import Compiler
-from Defines import Standard
-
-if sys.platform[:5] == 'linux':
-    IsLinix = True
-else:
-    IsLinix = False
-
-def compileItem(Dir, Item):
-    SrcFileName = Item + '.cpp'
-    SrcFile = Dir + '/' + SrcFileName
-    ObjFileName = Item + '.o'
-    ObjFile = BinaryDir + '/' + ObjFileName
+def compileItem(Directory, Item):
+    SourceFileName = Item + '.cpp'
+    SourceFile = Directory + '/' + SourceFileName
+    ObjectFileName = Item + '.o'
+    ObjectFile = BinaryDirectory + '/' + ObjectFileName
     Command = [
         Compiler,
         '-c',
@@ -32,51 +16,54 @@ def compileItem(Dir, Item):
         '-Werror',
         '-g',
         '-O0',
-        '-I' + IncludesDir,
-        '-o' + ObjFile,
-        SrcFile
+        '-I' + IncludesDirectory,
+        '-o' + ObjectFile,
+        SourceFile
     ]
-    if os.path.isfile(ObjFile):
-        os.remove(ObjFile)
-    with open(CompilerOutput, "ab") as fd:
+    if os.path.isfile(ObjectFile):
+        os.remove(ObjectFile)
+    with open(CompilerOutput, 'ab') as OutputHandle:
         return subprocess.call(
             Command,
-            stdout=fd,
-            stderr=fd
+            stdout=OutputHandle,
+            stderr=OutputHandle
         )
 
-def compileAll(RootDir):
-    if not os.path.isdir(BinaryDir):
-        os.mkdir(BinaryDir)
-    List = []
+
+def compileAll(RootDirectory):
+    if not os.path.isdir(BinaryDirectory):
+        os.mkdir(BinaryDirectory)
+    ObjectsList = []
     for Item in os.listdir('src'):
         if Item.endswith('.cpp'):
-            List.append(Item[:-4])
-    List.sort()
-    for Object in List:
-        if compileItem(SourcesDir, Object) != 0:
+            ObjectsList.append(Item[:-4])
+    ObjectsList.sort()
+    for Object in ObjectsList:
+        if compileItem(SourcesDirectory, Object) != 0:
             print '[FAIL] {' + Object + '} replaced by proxy.'
-            compileItem(ProxiesDir, Object)
+            compileItem(ProxiesDirectory, Object)
         else:
             print '[ OK ] {' + Object + '} compiled successfully.'
 
+
 def linkObjects():
     Command = [ Compiler ]
-    for Item in os.listdir(BinaryDir):
+    for Item in os.listdir(BinaryDirectory):
         if Item.endswith('.o'):
-            Command.append(BinaryDir + '/' + Item)
+            Command.append(BinaryDirectory + '/' + Item)
     if IsLinix:
         Command.append('-pthread')
     Command.append('-o' + BinaryFile)
-    with open(CompilerOutput, "ab") as fd:
+    with open(CompilerOutput, 'ab') as OutputHandle:
         if subprocess.call(
             Command,
-            stdout=fd,
-            stderr=fd
+            stdout=OutputHandle,
+            stderr=OutputHandle
         ) != 0:
-            print 'Linking failed'
+            print 'Linking failed.'
         else:
-            print 'Linking done'
+            print 'Linking done.'
+
 
 def build():
     if IsLinix:
@@ -88,68 +75,100 @@ def build():
         exit(1)
     if os.path.isfile(CompilerOutput):
         os.remove(CompilerOutput)
-    compileAll(RootDir)
+    compileAll(RootDirectory)
     linkObjects()
+
 
 def clean():
     os.system('git clean -dfX')
 
+
 def run():
     subprocess.call(BinaryFile)
 
+
 def makeProxies():
-    if not os.path.isdir(ProxiesDir):
-        os.mkdir(ProxiesDir)
-    for Item in os.listdir(ProxiesDir):
-        os.remove(ProxiesDir + '/' + Item)
-    for Item in os.listdir(SourcesDir):
+    print 'Making proxies ...',
+    sys.stdout.flush()
+    if not os.path.isdir(ProxiesDirectory):
+        os.mkdir(ProxiesDirectory)
+    for Item in os.listdir(ProxiesDirectory):
+        os.remove(ProxiesDirectory + '/' + Item)
+    for Item in os.listdir(SourcesDirectory):
         if Item == '++c.cpp':
             continue
         if Item.endswith('.cpp'):
-            with open(ProxiesDir + '/' + Item, "ab") as fd:
-                fd.write('#include <++c.h>\n\n')
-                fd.write('void ' + Item[:-4] + '() {\n')
-                fd.write('    std::cout << std::endl << \"Feature \\\"' + Item[:-4] + '\\\" not implemented.\" << std::endl;\n')
-                fd.write('}\n')
+            with open(ProxiesDirectory + '/' + Item, 'ab') as OutputHandle:
+                OutputHandle.write('#include <++c.h>\n\n')
+                OutputHandle.write('void ' + Item[:-4] + '() {\n')
+                OutputHandle.write('    std::cout << std::endl << \"Feature \\\"')
+                OutputHandle.write(Item[:-4])
+                OutputHandle.write('\\\" not implemented.\" << std::endl;\n')
+                OutputHandle.write('}\n')
+    print 'done.'
+
 
 def makeDeclarations():
-    DeclarationsFile = IncludesDir + '/declarations.h'
+    print 'Making declarations ...',
+    sys.stdout.flush()
+    DeclarationsFile = IncludesDirectory + '/declarations.h'
     if os.path.isfile(DeclarationsFile):
         os.remove(DeclarationsFile)
-    with open(DeclarationsFile, "ab") as fd:
-        fd.write('#ifndef DECLARATIONS_H\n')
-        fd.write('#define DECLARATIONS_H\n\n')
-        for Item in sorted(os.listdir(ProxiesDir), key=str.lower):
+    with open(DeclarationsFile, 'ab') as OutputHandle:
+        OutputHandle.write('#ifndef DECLARATIONS_H\n')
+        OutputHandle.write('#define DECLARATIONS_H\n\n')
+        for Item in sorted(os.listdir(ProxiesDirectory), key=str.lower):
             if Item == '++c.cpp':
                 continue
             if Item.endswith('.cpp'):
-                fd.write('void ' + Item[:-4] + '();\n')
-        fd.write('\n#endif // DECLARATIONS_H\n')
+                OutputHandle.write('void ' + Item[:-4] + '();\n')
+        OutputHandle.write('\n#endif // DECLARATIONS_H\n')
+    print 'done.'
 
-RootDir = os.getcwd()
-Name = os.path.basename(RootDir)
+
+import os
+import sys
+import subprocess
+
+sys.dont_write_bytecode = True
+import Defines
+from Defines import Compiler
+from Defines import Standard
+
+
+if sys.platform.startswith('linux'):
+    IsLinix = True
+else:
+    IsLinix = False
+
+RootDirectory = os.getcwd()
+Name = os.path.basename(RootDirectory)
 if IsLinix:
     BinaryFileName = Name + '.elf'
 else:
     BinaryFileName = Name + '.exe'
-BinaryDir = RootDir + '/bin'
-BinaryFile = BinaryDir + '/' + BinaryFileName
-SourcesDir = RootDir + '/src'
-ProxiesDir = RootDir + '/proxies'
-IncludesDir = RootDir + '/include'
-CompilerOutput = RootDir + '/CompilerOutput.txt'
+BinaryDirectory = RootDirectory + '/bin'
+BinaryFile = BinaryDirectory + '/' + BinaryFileName
+SourcesDirectory = RootDirectory + '/src'
+ProxiesDirectory = RootDirectory + '/proxies'
+IncludesDirectory = RootDirectory + '/include'
+CompilerOutput = RootDirectory + '/CompilerOutput.txt'
+
 
 if len(sys.argv) > 1:
     if sys.argv[1] == 'Build':
         build()
-    if sys.argv[1] == 'Clean':
+    elif sys.argv[1] == 'Clean':
         clean()
-    if sys.argv[1] == 'Run':
+    elif sys.argv[1] == 'Run':
         run()
-    if sys.argv[1] == 'MakeProxies':
+    elif sys.argv[1] == 'MakeProxies':
         makeProxies()
-    if sys.argv[1] == 'MakeDeclarations':
+    elif sys.argv[1] == 'MakeDeclarations':
         makeDeclarations()
+    else:
+        print 'Use one of \'Build\', \'Clean\', \'Run\', \'MakeProxies\' or \'MakeDeclarations\''
+        exit(1)
 else:
     clean()
     build()
