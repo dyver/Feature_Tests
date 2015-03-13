@@ -1,6 +1,7 @@
 #include <++c.h>
 
 int main() {
+    // C++11
     AutoTypeDeduction();
     RangeForStatement();
     RightAngleBrackets();
@@ -57,8 +58,7 @@ int main() {
     Threads();
     MutualExclusion();
     Locks();
-    // Conditional variables
-    // Stroustrup haven't write this article.
+    ConditionVariables();
     TimeUtilities();
     // Atomics
     // Stroustrup haven't write this article.

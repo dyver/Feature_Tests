@@ -9,6 +9,7 @@ void Attributes();
 void AutoTypeDeduction();
 void BinaryLiterals();
 void C99features();
+void ConditionVariables();
 void ConstExpr();
 void ContainerImprovements();
 void ControlOfDefaults();
