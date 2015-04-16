@@ -22,12 +22,6 @@ qrc_*
 ui_*.h
 object_script.*
 
-compiler_output.txt
-bin
-*.exe
-
 Makefile
-
-build-*
 
 *.kate-swp
