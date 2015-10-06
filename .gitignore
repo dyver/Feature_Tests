@@ -21,6 +21,7 @@ moc_*.cpp
 qrc_*
 ui_*.h
 object_script.*
+build-*
 
 Makefile
 
