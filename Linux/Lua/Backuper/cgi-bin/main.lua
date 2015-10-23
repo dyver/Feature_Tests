@@ -31,15 +31,18 @@ local append_to_page = function(info)
     if (type(info) == 'table') then
         info = table.concat(info, '\n') .. '<p/>'
     end
-    info = string.gsub(info, '\n', '<div>\n')
     page.body = (page.body or '') .. info .. '\n'
+end
+
+local report_error = function(message)
+    append_to_page('<h1>ERROR:</h1>')
+    append_to_page(message)
 end
 
 local safe_call = function(f)
     local code, r1, r2 = xpcall(f, debug.traceback)
     if not code then
-        append_to_page('<h1>ERROR:</h1>')
-        append_to_page(r1)
+        report_error(r1)
         return false
     else
         return r1, r2

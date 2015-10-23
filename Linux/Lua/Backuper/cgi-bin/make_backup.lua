@@ -3,34 +3,54 @@
 package.path = './cgi-bin/?.lua;' .. package.path
 
 local cgi = require('cgi')
-require('lfs')
-
-local parameters = cgi.Params()['Post']
-
-if parameters['Action'] == nil then
-   parameters['Login'] = 'Nobody'
-   parameters['Action'] = 'prompt'
-end
+local lfs = require('lfs')
+local sha2 = require('sha2')
 
 local program_work_directory = '/tmp/backuper_archiver/'
-local login_work_directory = program_work_directory .. parameters['Login'] .. '/'
-local pid_file = login_work_directory .. 'pid'
-local status
+
+local parameters = cgi.parameters().Post
+parameters.ClientAddress = cgi.parameters().REMOTE_ADDR
+parameters.Action = parameters.Action or 'prompt'
+parameters.Login = parameters.Login or 'Nobody'
+local security_hash_file = program_work_directory .. parameters.ClientAddress
+
 local session_key = 0
-local session_key_file = login_work_directory .. 'key'
+local session_key_file = security_hash_file
+local login_work_directory = program_work_directory .. parameters.Login .. '/'
+
 local user_configuration = {}
+local status
+local packer_pid_file = login_work_directory .. 'pid'
 local packer_command_file = login_work_directory .. 'packer.sh'
 local packer_destination_directory
 
+local create_security_hash = function()
+    local security_hash = sha2.hash256(parameters.ClientAddress .. math.random(1, 10000))
+    lfs.mkdir(program_work_directory)
+    local f = assert(io.open(security_hash_file, 'w'))
+    f:write(security_hash)
+    f:close()
+    parameters.SecurityHash = security_hash
+end
+
+local read_security_hash = function()
+    local f = assert(io.open(security_hash_file, 'r'))
+    local result = f:read('a')
+    f:close()
+    parameters.SecurityHash = result
+end
+
 local check_login = function(fake)
-    local login = parameters['Login']
-    local password = parameters['Password']
+    local login = parameters.Login
+    local client_key_hash = parameters.SessionKeyHash
+    local security_hash = parameters.SecurityHash or ''
     local logins_file = './auth/logins.conf'
     local result, name
     local Login = function(records)
         for key, value in pairs(records) do
             if key == login then
-                if value.password == password or fake then
+                local server_key_hash = sha2.hash256(value.password .. security_hash)
+                if client_key_hash == server_key_hash or fake then
                     result = true
                 else
                     result = false
@@ -47,6 +67,14 @@ local check_login = function(fake)
     return result, name
 end
 
+local create_session_key = function()
+    local key = parameters.SessionKeyHash
+    lfs.mkdir(program_work_directory)
+    local f = io.open(session_key_file, 'w')
+    f:write(key)
+    f:close()
+end
+
 local check_session = function()
     local f = io.open(session_key_file, 'r')
     if not f then
@@ -54,20 +82,10 @@ local check_session = function()
     end
     local result = f:read('a')
     f:close()
-    if result == parameters['Key'] then
+    if result == parameters.SessionKeyHash then
         return true
     end
     return false
-end
-
-local create_session_key = function()
-    local key = math.random(1, 10000)
-    lfs.mkdir(program_work_directory)
-    lfs.mkdir(login_work_directory)
-    local f = io.open(session_key_file, 'w')
-    f:write(key)
-    f:close()
-    parameters['Key'] = key
 end
 
 local report_login_result = function(result, name)
@@ -81,7 +99,7 @@ local report_login_result = function(result, name)
 end
 
 local read_user_configuration = function()
-    local login = parameters['Login']
+    local login = parameters.Login
     local directories_list_file = './data/' .. login .. '.conf'
     local result
     local Configuration = function(records)
@@ -95,15 +113,14 @@ local read_user_configuration = function()
     end
     local f, error_message = loadfile(directories_list_file)
     if not f then
-        append_to_page('<h1>ERROR:</h1>')
-        append_to_page(error_message)
+        report_error(error_message)
     else
         debug.setupvalue(f, 1, { Configuration = Configuration })
         f()
     end
+    lfs.mkdir(packer_destination_directory)
     if lfs.attributes(packer_destination_directory, 'mode') == nil then
-        append_to_page('<h1>ERROR:</h1>')
-        append_to_page('No such directory: ' .. packer_destination_directory)
+        report_error('No such directory: ' .. packer_destination_directory)
         user_configuration = {}
         return
     end
@@ -153,7 +170,7 @@ local start_process = function()
     f:close()
     os.execute('chmod 777 ' .. packer_command_file)
 
-    local store_pid_suffix = ' & echo $! > ' .. pid_file
+    local store_pid_suffix = ' & echo $! > ' .. packer_pid_file
     os.execute(packer_command_file .. store_pid_suffix)
 end
 
@@ -161,20 +178,26 @@ local add_login_form = function()
     append_to_page('<h1>Вас приветствует программа создания резервной копии.</h1>')
     append_to_page('<h2>Введите имя учётной записи и пароль:</h2>')
     local form = [[
-        <form action='/cgi-bin/main.lua' method='post'>
-            <div><input type='hidden' name='Action' value='login' /></div>
+        <script src='/js/sha256.js'></script>
+        <script src='/js/onSubmit.js'></script>
+        <form action='/cgi-bin/main.lua' method='post' onsubmit='return onSubmit();'>
+            <input type='hidden' name='Action' value='login' maxlength='15'/>
+            <input type='hidden' name='SessionKeyHash' maxlength='100'/>
+            <input type='hidden' name='SecurityHash'
+                value=']] .. parameters.SecurityHash .. [[' maxlength='100'
+            />
             <table>
                 <tbody>
                     <tr>
                         <td>Учётная запись</td>
-                        <td><input type='text' size='20' name='Login' /></td>
+                        <td><input type='text' name='Login' size='20' maxlength='15'/></td>
                     </tr>
                     <tr>
                         <td>Пароль</td>
-                        <td><input type='password' size='20' name='Password' /></td>
+                        <td><input type='password' name='Password' size='20' maxlength='15'/></td>
                     </tr>
                     <tr>
-                        <td><input type='submit' value='Ввод' /></td>
+                        <td><input type='submit' value='Ввод'/></td>
                     </tr>
                 </tbody>
             </table>
@@ -186,8 +209,12 @@ end
 local add_start_form = function()
     local form_head = [[
         <form action='/cgi-bin/main.lua' method='post'>
-            <div><input type='hidden' name='Login' value=']] .. parameters['Login'] .. [[' /></div>
-            <div><input type='hidden' name='Key' value=']] .. parameters['Key'] .. [[' /></div>
+            <div><input type='hidden' name='Login' value=']] .. parameters.Login .. [[' /></div>
+            <div>
+                <input type='hidden' name='SessionKeyHash'
+                    value=']] .. parameters.SessionKeyHash .. [['
+                />
+            </div>
             <table>
                 <tbody>
                     <tr>
@@ -219,7 +246,7 @@ end
 
 local add_status_form = function()
     local retreive_pid = function()
-        local f = io.open(pid_file, 'r')
+        local f = io.open(packer_pid_file, 'r')
         if not f then
             return false
         end
@@ -250,10 +277,12 @@ end
 local actions = {}
 
 actions.prompt = function()
+    create_security_hash()
     add_login_form()
 end
 
 actions.login = function()
+    read_security_hash()
     local result, name = check_login()
     report_login_result(result, name)
     if not result then
@@ -262,6 +291,7 @@ actions.login = function()
     create_session_key()
     read_user_configuration()
     show_user_configuration()
+
     add_status_form()
     add_start_form()
 end
@@ -291,4 +321,4 @@ actions.status = function()
     add_start_form()
 end
 
-actions[parameters['Action']]()
+actions[parameters.Action]()
