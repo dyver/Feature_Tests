@@ -142,6 +142,7 @@ local show_user_configuration = function()
 end
 
 local start_process = function()
+    lfs.mkdir(login_work_directory)
     lfs.mkdir(packer_destination_directory)
     local all_pack_commands = ''
     for i, directory_to_pack in ipairs(user_configuration) do
@@ -164,7 +165,7 @@ local start_process = function()
         pack_command = pack_command .. '\n'
         all_pack_commands = all_pack_commands .. pack_command
     end
-    local f = io.open(packer_command_file, 'w')
+    local f = assert(io.open(packer_command_file, 'w'))
     f:write('#!/bin/bash\n\n')
     f:write(all_pack_commands)
     f:close()
