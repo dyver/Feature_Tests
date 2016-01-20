@@ -12,11 +12,11 @@
 
 #include <../lib/SharedLibrary.h>
 
-int main(int argc, char** argv) {
+int main(int argc, char* argv[]) {
     QCoreApplication::setOrganizationName("ru.dyver.nik");
     QCoreApplication::setApplicationName("Android");
 
-    QApplication app(argc, argv);
+    QApplication application(argc, argv);
 
     // Читаем данные из файла, используя систему "assets"
     #if defined(Q_OS_ANDROID)
@@ -25,24 +25,24 @@ int main(int argc, char** argv) {
         const char* readonlyFileName = "./ReadOnly/ReadonlyFile.txt";
     #endif
     QFile readonlyFile(readonlyFileName);
-    QByteArray line("Пустая строка");
+    QByteArray line("Read-only файл не обнаружен<br/>");
     if (readonlyFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        line = "<h3>" + readonlyFile.readLine() + "</h3>";
+        line = readonlyFile.readLine() + "<br/>";
     }
     readonlyFile.close();
 
-    QString contentString(line);
+    QString contentString("<em>Данные из файла: </em><b>" + line + "</b>");
 
     // Читаем из файла и записываем данные в файл
     QString writableDirectory = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
     QDir().mkpath(writableDirectory);
     QString writableFileName = QString(writableDirectory) + "/WritableFile.txt";
-    QString data;
+    QString data{"Файл не обнаружен."};
     QFile writableFile(writableFileName);
     if (writableFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
         data = writableFile.readLine();
     }
-    contentString += QString("Счётчик из записываемого файла: ") + "<h5>" + data + "</h5>";
+    contentString += "<em>Счётчик из записываемого файла: </em><b>" + data + "</b><br/>";
     writableFile.close();
     int counter = data.toInt();
     if (writableFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
@@ -50,10 +50,10 @@ int main(int argc, char** argv) {
     }
     writableFile.close();
 
-    contentString += "Данные из файла ресурсов, прочитанного библиотекой: ";
-    contentString += "<h5>" + SharedLibrary::getFileContent(":/text/ReadonlyFile.txt") + "</h5>";
+    contentString += "<em>Данные из файла ресурсов, прочитанного библиотекой: </em>";
+    contentString += "<b>" + SharedLibrary::getFileContent(":/text/ReadonlyFile.txt") + "</b><br/>";
 
-    contentString += "<small>";
+    contentString += "<em>Стандартные пути: <br/><small>";
     contentString += "<em>HomeLocation:</em><br/>";
     contentString += QStandardPaths::writableLocation(QStandardPaths::HomeLocation) + "<br/>";
     contentString += "<em>DataLocation:</em><br/>";
@@ -66,8 +66,8 @@ int main(int argc, char** argv) {
     contentString += QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation) + "<br/>";
     contentString += "</small>";
     auto content = new QTextEdit{contentString};
-    content->setAlignment(Qt::AlignCenter);
-    auto header = new QLabel{QString("<h2><i>Привет</i> <font color=red>братья по разуму!</font></h2>")};
+    content->setAlignment(Qt::AlignLeft);
+    auto header = new QLabel{"<h2><em>Привет,</em> <font color=red>братья по разуму</font> !</h2>"};
     header->setAlignment(Qt::AlignCenter);
 
     // Получаем данные из файла ресурсов
@@ -78,17 +78,23 @@ int main(int argc, char** argv) {
     pictureLabel->setPixmap(*picture);
     pictureLabel->setAlignment(Qt::AlignCenter);
 
-    auto button = new QPushButton{"OK"};
-    QObject::connect(button, &QPushButton::clicked, &app, &QApplication::exit);
-    auto layout = new QVBoxLayout();
+    QApplication::setWindowIcon(QIcon(":/images/icon.png"));
+    auto closeButton = new QPushButton{"Закрыть"};
+    QObject::connect(closeButton, &QPushButton::clicked, &application, &QApplication::exit);
+    auto cleanButton = new QPushButton{"Удалить записываемый файл"};
+    QObject::connect(cleanButton, &QPushButton::clicked, [&]{ QDir().remove(writableFileName); });
+    auto layout = new QVBoxLayout;
     layout->addWidget(header);
     layout->addWidget(content);
     layout->addWidget(pictureLabelBuddy);
     layout->addWidget(pictureLabel);
-    layout->addWidget(button);
+    layout->addWidget(cleanButton);
+    layout->addWidget(closeButton);
     auto window = new QWidget;
     window->setWindowTitle("Hello!");
     window->setLayout(layout);
+    closeButton->setDefault(true);
+    closeButton->setFocus();
     window->show();
-    return app.exec();
+    return application.exec();
 }
