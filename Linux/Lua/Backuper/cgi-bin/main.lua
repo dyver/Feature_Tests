@@ -36,7 +36,7 @@ end
 
 local report_error = function(message)
     append_to_page('<h1>ERROR:</h1>')
-    append_to_page(message)
+    append_to_page('<p>' .. message:gsub('\n', '<br>\n'):gsub('\t', '&nbsp;&nbsp;&nbsp;&nbsp;'))
 end
 
 local safe_call = function(f)

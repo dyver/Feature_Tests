@@ -5,27 +5,20 @@ local cgi = {}
 -- is encoded as
 --   "Here%20%26%20there%20%2B%2097%25%20of%20other%20places"
 cgi.encode = function(s)
-    return string.gsub(
-        s, '%W', function(s)
-            return string.format('%%%02X', string.byte(s))
-        end
-    )
+    return (s:gsub('%W', function(c)
+        return string.format('%%%02X', string.byte(c))
+    end))
 end
 
 -- Returns a urldecoded copy of s. This function reverses the effects of cgi.encode.
 cgi.decode = function(s)
-    s = string.gsub(s, '%+', ' ')
-    s = string.gsub(s, '%%(%x%x)', function(s) return string.char(tonumber(s, 16)) end)
-    return s
+    return (s:gsub('%+', ' '):gsub('%%(%x%x)', function(c) return string.char(tonumber(c, 16)) end))
 end
 
 -- Returns an escaped copy of s in which the characters &<>" are escaped for
 -- display in HTML documents.
 cgi.escape = function(s)
-    s = string.gsub(s or '', '%&', '&amp;')
-    s = string.gsub(s, '%"', '&quot;')
-    s = string.gsub(s, '%<', '&lt;')
-    return string.gsub(s, '%>', '&gt;')
+    return (s:gsub('%&', '&amp;'):gsub('%"', '&quot;'):gsub('%<', '&lt;'):gsub('%>', '&gt;'))
 end
 
 -- This function returns an associative array with the parsed contents of the
