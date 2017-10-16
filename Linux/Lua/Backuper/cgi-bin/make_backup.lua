@@ -2,17 +2,19 @@
 
 package.path = './cgi-bin/?.lua;' .. package.path
 
-local cgi = require('cgi')
-local lfs = require('lfs')
-local sha2 = require('sha2')
+local cgi = require 'cgi'
+local lfs = require 'lfs'
+local sha2 = require 'sha2'
+local pm = require 'pm'
 
-local program_work_directory = '/tmp/backuper_archiver/'
+local temporary_directory = (os.getenv('TEMP') or '/tmp') .. '/'
+local program_work_directory = temporary_directory .. 'backuper_archiver/'
 
 local parameters = cgi.parameters().Post
 parameters.ClientAddress = cgi.parameters().REMOTE_ADDR
 parameters.Action = parameters.Action or 'prompt'
 parameters.Login = parameters.Login or 'Nobody'
-local security_hash_file = program_work_directory .. parameters.ClientAddress
+local security_hash_file = program_work_directory .. parameters.ClientAddress:gsub('[:.]', '_')
 
 local session_key = 0
 local session_key_file = security_hash_file
@@ -21,7 +23,7 @@ local login_work_directory = program_work_directory .. parameters.Login .. '/'
 local user_configuration = {}
 local status
 local packer_pid_file = login_work_directory .. 'pid'
-local packer_command_file = login_work_directory .. 'packer.sh'
+local packer_command_file = login_work_directory .. 'packer.lua'
 local packer_destination_directory
 
 local create_security_hash = function()
@@ -103,20 +105,29 @@ local read_user_configuration = function()
     local directories_list_file = './data/' .. login .. '.conf'
     local result
     local Configuration = function(records)
-        for key, value in ipairs(records) do
+        for _, value in ipairs(records) do
             if lfs.attributes(value, 'mode') ~= 'directory' then
                 value = value .. '  <em>&larr; такого каталога нет</em>'
             end
             table.insert(user_configuration, value)
         end
-        packer_destination_directory = records.destination or '/tmp/'
+        if type(records.destination) == 'table' then
+            for _, value in ipairs(records.destination) do
+                if lfs.attributes(value, 'mode') == 'directory' then
+                    packer_destination_directory = value .. '/' .. login
+                    break
+                end
+            end
+        else
+            packer_destination_directory = (records.destination or '/tmp/') .. login
+        end
     end
-    local f, error_message = loadfile(directories_list_file)
-    if not f then
-        report_error(error_message)
+    local load_configuration, error_message = loadfile(directories_list_file)
+    if load_configuration then
+        debug.setupvalue(load_configuration, 1, { Configuration = Configuration })
+        load_configuration()
     else
-        debug.setupvalue(f, 1, { Configuration = Configuration })
-        f()
+        report_error(error_message)
     end
     lfs.mkdir(packer_destination_directory)
     if lfs.attributes(packer_destination_directory, 'mode') == nil then
@@ -144,35 +155,35 @@ end
 local start_process = function()
     lfs.mkdir(login_work_directory)
     lfs.mkdir(packer_destination_directory)
-    local all_pack_commands = ''
-    for i, directory_to_pack in ipairs(user_configuration) do
-        local pack_file = packer_destination_directory .. '/' .. i .. '_pack.7z'
-        os.remove(pack_file)
-        pack_command = {
-            '7z',
-            'a',
-            '-t7z',  -- 7z archive
-            '-m0=lzma',  -- lzma method
-            '-mfb=64',  -- 64 fast bytes for LZMA
-            '-md=32m',  -- dictionary size = 32 megabytes
-            '-mx=9',  -- ultra compression
-            '-ms=on',  -- solid archive
-            pack_file,
-            '"' .. directory_to_pack .. '"',
-            '1> /dev/null'
-        }
-        pack_command = table.concat(pack_command, ' ')
-        pack_command = pack_command .. '\n'
-        all_pack_commands = all_pack_commands .. pack_command
-    end
     local f = assert(io.open(packer_command_file, 'w'))
-    f:write('#!/bin/bash\n\n')
-    f:write(all_pack_commands)
+    for i, directory_to_pack in ipairs(user_configuration) do
+        if lfs.attributes(directory_to_pack, 'mode') == 'directory' then
+            local pack_file = packer_destination_directory .. '/' .. i .. '_pack.7z'
+            os.remove(pack_file)
+            pack_command = {
+                '7z',
+                'a',
+                '-t7z',  -- 7z archive
+                '-m0=lzma',  -- lzma method
+                '-mfb=64',  -- 64 fast bytes for LZMA
+                '-md=32m',  -- dictionary size = 32 megabytes
+                '-mx=9',  -- ultra compression
+                '-ms=on',  -- solid archive
+                pack_file,
+                '"' .. directory_to_pack .. '"',
+            }
+            pack_command = table.concat(pack_command, ' ')
+            pack_command = pack_command:gsub('\\', '/')
+            f:write('os.execute(\'' .. pack_command .. '\')\n')
+        end
+    end
     f:close()
-    os.execute('chmod 777 ' .. packer_command_file)
-
-    local store_pid_suffix = ' & echo $! > ' .. packer_pid_file
-    os.execute(packer_command_file .. store_pid_suffix)
+    if lfs.attributes(packer_command_file, 'size') ~= 0 then
+        local pid = pm.start_process('lua ' .. packer_command_file)
+        f = assert(io.open(packer_pid_file, 'w'))
+        f:write(pid)
+        f:close()
+    end
 end
 
 local add_login_form = function()
@@ -249,21 +260,14 @@ local add_status_form = function()
     local retreive_pid = function()
         local f = io.open(packer_pid_file, 'r')
         if not f then
-            return false
+            return 0
         end
         local result = f:read('a')
         f:close()
         return result
     end
     local check_process_started = function()
-        local pid = retreive_pid()
-        if not pid then
-            return false
-        end
-        local f = io.popen('ps | grep -o ' .. pid, 'r')
-        local result = f:read('a')
-        f:close()
-        return result == pid
+        return pm.is_process_exist(retreive_pid())
     end
     if #user_configuration == 0 then return end
     if not check_process_started() then
@@ -299,6 +303,7 @@ end
 
 actions.start = function()
     if not check_session() then
+        actions.prompt()
         return
     end
     local result, name = check_login(true)
@@ -312,6 +317,7 @@ end
 
 actions.status = function()
     if not check_session() then
+        actions.prompt()
         return
     end
     local result, name = check_login(true)

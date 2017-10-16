@@ -83,7 +83,7 @@ cgi.parameters = function()
     if not parameters_cache.SERVER_SOFTWARE then -- Command line invocation
         parameters_cache.QUERY_STRING = arg[1]
         post_string = arg[2]
-    elseif 'application/x-www-form-urlencoded' == parameters_cache.CONTENT_TYPE then
+    elseif parameters_cache.CONTENT_TYPE == 'application/x-www-form-urlencoded' then
         -- Web server invocation with posted urlencoded content
         post_string_length = tonumber(parameters_cache.CONTENT_LENGTH)
         if post_string_length and post_string_length > 0 then

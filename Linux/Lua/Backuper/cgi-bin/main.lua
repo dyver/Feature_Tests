@@ -58,6 +58,7 @@ local main = function()
         local environment = _ENV
         environment.page = page
         environment.append_to_page = append_to_page
+        environment.report_error = report_error
         debug.setupvalue(make_backup, 1, environment)
         safe_call(make_backup)
     end

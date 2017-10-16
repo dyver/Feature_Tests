@@ -1,9 +1,11 @@
 #!/usr/bin/env lua
 
+require 'lfs'
+
 attohttp = {}
 
 attohttp._ABOUT = 'Atto HTTP server'
-attohttp._VERSION = '2017.10.03.00'
+attohttp._VERSION = '2017.10.16.00'
 attohttp._AUTHORS = 'Sergey Nikonov <dyver@hotmail.com>'
 attohttp._DESCRIPTION =
     attohttp._ABOUT .. '\nVersion: ' .. attohttp._VERSION ..
@@ -95,10 +97,11 @@ attohttp.listen = function(host, port)
                 for key, value in pairs(parameters) do
                     environ.setenv(key, value)
                 end
-                local data_file = os.tmpname()
-                local error_file = os.tmpname()
+                local temporary_directory = (os.getenv('TEMP') or '/tmp') .. '/'
+                local data_file = temporary_directory .. 'atto_data_file'
+                local error_file = temporary_directory .. 'atto_error_file'
                 local handle, e = io.popen(
-                    '.' .. request.path .. ' > ' .. data_file .. ' 2> ' .. error_file, 'w'
+                    'lua ' .. lfs.currentdir() .. request.path .. ' > ' .. data_file .. ' 2> ' .. error_file, 'w'
                 )
                 if handle then
                     if request.command == 'POST' then
@@ -108,8 +111,10 @@ attohttp.listen = function(host, port)
                 end
                 local handle = io.open(error_file, 'r')
                 if handle then
-                    if handle:read('a') ~= '' then
+                    local err = handle:read('a')
+                    if err ~= '' then
                         build_message(headers.fail, 'html', default_page)
+                        print('ERROR:' .. err)
                     else
                         local handle = io.open(data_file, 'r')
                         if not handle then
