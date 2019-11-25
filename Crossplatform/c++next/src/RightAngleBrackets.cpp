@@ -9,5 +9,5 @@ template<typename T> class RightAngleBracketsClass {
 
 void RightAngleBrackets() {
     RightAngleBracketsClass<RightAngleBracketsClass<int>> rav;
-    rav.x.x++;
+    (void)rav;
 }

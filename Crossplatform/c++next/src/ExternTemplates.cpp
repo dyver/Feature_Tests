@@ -5,6 +5,7 @@
 template <typename T> class ExternTemplate {
     public:
         T t;
+        ExternTemplate() { t = T(); }
 };
 
 extern template class ExternTemplate<int>; // supress instantation here

@@ -1,6 +1,6 @@
 CCC=g++
 #CCC=arm-g++
-FLAGS= -Wall -g -O0 -pedantic
+FLAGS= -std=c++98 -Wall -Wextra -pedantic-errors -O3 -Wall -Wextra -Werror -g -O0 -pedantic
 NAME=sound
 OBJECTS=main.cpp
 LIBS=-lasound

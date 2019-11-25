@@ -5,7 +5,7 @@ int main(int argc, char* argv[]) {
 
     QDesktopWidget* desktop = QApplication::desktop();
     for (int i = 0; i < desktop->numScreens(); ++i) {
-        qDebug() << "Screen #" << i << ":"
+        qInfo() << "Screen #" << i << ":"
             << " width:" << desktop->screenGeometry(i).width()
             << " height:" << desktop->screenGeometry(i).height()
         ;
@@ -14,7 +14,8 @@ int main(int argc, char* argv[]) {
     auto screens = QGuiApplication::screens();
     int selectedScreenIndex = screens.size() - 1;
     auto selectedScreen = screens[selectedScreenIndex];
-    selectedScreen->grabWindow(0);
+
+    QObject::connect(&app, &QGuiApplication::screenAdded, [](QScreen* ) { qInfo() << "Added screen #"; });
 
     QLabel central;
     auto pic = selectedScreen->grabWindow(0);

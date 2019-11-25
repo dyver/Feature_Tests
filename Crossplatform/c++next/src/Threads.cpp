@@ -1,5 +1,6 @@
 #include <thread> // for std::thread
 #include <mutex> // for std::mutex
+#include <functional> // for std::bind
 
 #include <++c.h>
 

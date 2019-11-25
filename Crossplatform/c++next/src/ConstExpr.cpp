@@ -17,9 +17,9 @@ void ConstExpr() {
     ConstExpression ce;
     const int constValue2 = ce.getValue();
     int i = constValue + constValue2;
-    i++;
+    (void)i;
     int fixedSizeArray[getConstValue()];
-    fixedSizeArray[0]++;
+    (void)fixedSizeArray;
     int fixedSizeArray2[ConstExpression().getValue()];
-    fixedSizeArray2[0]++;
+    (void)fixedSizeArray2;
 }

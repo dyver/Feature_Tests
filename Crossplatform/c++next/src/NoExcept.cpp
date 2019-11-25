@@ -3,7 +3,8 @@
 // noexcept - preventing exception propagation
 
 void noExceptFunction() noexcept {
-    throw int();
+    // error: throw will always call terminate() [-Werror=terminate]
+    // throw int();
 }
 
 void conditionalNoExceptFunction() noexcept(!noexcept(noExceptFunction())) {

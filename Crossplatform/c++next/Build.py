@@ -71,8 +71,9 @@ def build():
     else:
         CompilerFile = Compiler + '.exe'
     if not os.path.isfile(CompilerFile):
-        print 'ERROR: Specified compiler {' + Compiler + '} not present in system.'
+        print 'ERROR: Specified compiler {' + Compiler + '} is absent.'
         exit(1)
+    print('Using compiler {' + Compiler + '}, standard {' + Standard + '}.')
     if os.path.isfile(CompilerOutput):
         os.remove(CompilerOutput)
     compileAll(RootDirectory)
